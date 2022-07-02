@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Leaflet Coordinates Control</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://d19vzq90twjlae.cloudfront.net/leaflet-0.7.3/leaflet.css" />
+  <link rel="stylesheet" href="Control.Coordinates.css" />
+</head>
+
+<body>
+  <div id="map" style="width: 1600px; height: 900px"></div>
+  <script src="https://d19vzq90twjlae.cloudfront.net/leaflet-0.7.3/leaflet.js"></script>
+  <script src="Control.Coordinates.js"></script>
+
+  <script src="leaflet.draw-custom.js"></script>
+  <script src="leaflet.draw.css"></script>
+
+  <script type="text/javascript" src="leaflet-control-credits.js"></script>
+  <link rel="stylesheet" href="leaflet-control-credits.css" />
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-minimap/3.6.1/Control.MiniMap.min.js"
+    integrity="sha512-WL3nAJlWFKoDShduxQRyY3wkBnQsINXdIfWIW48ZaPgYz1wYNnxIwFMMgigzSgjNBC2WWZ8Y8/sSyUU6abuF0g=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-minimap/3.6.1/Control.MiniMap.css"
+    integrity="sha512-efbAfGnrnjA+hLwOLu91W034fBGPsMwZMVCTwLUI2PDX/m7rOiuhYZ+D2mZ8rKcpC/I/7pdgoL8T4eYvMHNoQg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+
+  <script>
+    var map = L.map('map').setView([47.4916945, 11.0954984], 15);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
+
+L.marker([47.4916945, 11.0954984]).addTo(map)
+    .bindPopup('Klicke auf die Karte und befolge die drei Schritte an der Seite.')
+    .openPopup();
+    
+
+    var c = new L.Control.Coordinates();
+    c.addTo(map);
+
+    var credctrl = L.controlCredits({
+      image: "favicon-32x32.png",
+      link: "https://lra-gap.de/de/europaeische-mobilitaetswoche.html",
+      text: "Interaktive Karte<br/>des LK GAP "
+    }).addTo(map);
+
+
+    function onMapClick(e) {
+      c.setCoordinates(e);
+    }
+
+    map.on('click', onMapClick);
+
+    var editableLayers = new L.FeatureGroup();
+    map.addLayer(editableLayers);
+
+    var MyCustomMarker = L.Icon.extend({
+      options: {
+        shadowUrl: null,
+        iconAnchor: new L.Point(12, 12),
+        iconSize: new L.Point(24, 24),
+        iconUrl: 'images/image.png'
+      }
+    });
+
+    
+  </script>
+
+  <!-- Read the Formbutton docs at formspree.io/formbutton/docs. See more examples at codepen.io/formspree -->
+  <script src="https://formspree.io/js/formbutton-v1.min.js" defer></script>
+  <script>
+    /* paste this line in verbatim */
+    window.formbutton = window.formbutton || function () {
+      (formbutton.q = formbutton.q || []).push(arguments)
+    };
+    /* customize formbutton below*/
+    formbutton("create", {
+      action: "https://formspree.io/f/mbjwbbwv",
+      title: "Was möchtest du sagen?",
+      fields: [{
+          type: "textarea",
+          label: "Deine Koordinaten einfügen:",
+          name: "koordinaten",
+          required: true,
+          placeholder: "deine koordinaten"
+        },
+        {
+          type: "textarea",
+          label: "Was möchtest du dazu sagen?",
+          name: "nachricht",
+          placeholder: "Was magst du sagen?",
+        },
+        {
+          type: "submit"
+        }
+      ],
+      styles: {
+        title: {
+          backgroundColor: "green"
+        },
+        button: {
+          backgroundColor: "green"
+        }
+      }
+    });
+  </script>
+
+</body>
+
+</html>
