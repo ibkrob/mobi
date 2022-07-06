@@ -8,16 +8,48 @@
   <link rel="stylesheet" href="https://d19vzq90twjlae.cloudfront.net/leaflet-0.7.3/leaflet.css" />
   <link rel="stylesheet" href="Control.Coordinates.css" />
   <link rel="stylesheet" href="main.css" />
-
-</head>
-
-<body>
+  <script async src="https://tally.so/widgets/embed.js"></script>
   <div id="map" style="width: 1600px; height: 900px"></div>
+  
   <script src="https://d19vzq90twjlae.cloudfront.net/leaflet-0.7.3/leaflet.js"></script>
   <script src="Control.Coordinates.js"></script>
 
-  <script src="leaflet.draw-custom.js"></script>
-  <link rel="stylesheet" href="leaflet.draw.css" />
+
+    <!-- Mountainbike Symbol als favicon -->
+    <link rel="shortcut icon" href="icons/mountainbiking.png" type="image/png">
+
+    <!-- Font awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+        integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
+        integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
+        crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
+        integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
+        crossorigin=""></script>
+
+    <!-- Leaflet providers plugin -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-providers/1.13.0/leaflet-providers.min.js"
+        integrity="sha512-5EYsvqNbFZ8HX60keFbe56Wr0Mq5J1RrA0KdVcfGDhnjnzIRsDrT/S3cxdzpVN2NGxAB9omgqnlh4/06TvWCMw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <!-- Leaflet fullscreen plugin -->
+    <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
+    <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css'
+        rel='stylesheet' />
+
+    <!-- eigene Stile und Hauptskript -->
+    <link rel="stylesheet" href="main.css">
+    <script defer src="main.js"></script>
+
+    <!--Leaflet gpx-Plugins hinzu-->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"
+        integrity="sha512-BsUtn1Ar2O78Q8YkY1f2pkioHOs8H43KUlP3PHus8lyAMODNq1CmemnU435dFk/SU37OGG+ooxvmEhAcNTEBFQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
   <script type="text/javascript" src="leaflet-control-credits.js"></script>
   <link rel="stylesheet" href="leaflet-control-credits.css" />
@@ -29,26 +61,54 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-minimap/3.6.1/Control.MiniMap.css"
     integrity="sha512-efbAfGnrnjA+hLwOLu91W034fBGPsMwZMVCTwLUI2PDX/m7rOiuhYZ+D2mZ8rKcpC/I/7pdgoL8T4eYvMHNoQg=="
     crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+			#map {
+				width: 640px;
+				height: 480px;
+				border: 1px solid #888888;
+				float: left;
+			}
+			#text {
+				float: left;
+				padding: 10px;
+				width: 450px;
+				font-family: sans-serif;
+				font-size: 14px;
+			}
+			/*
+			.leaflet-control-messagebox {
+				background-color: transparent;
+			}
+			*/
 
+		</style>
+    
+</head>
+
+<body>
+  <h1>Gefahrenkarte der Schulwege im LK Ga.-Pa.<br>
+      .</h1>
     <main>
-      <article id="map">
-          <h1>B I K I N G<br>
-              .</h1>
+     
+          
 
       </article>
 
-      <script class=".map">
-        var map = L.map('map').setView([47.4916945, 11.0954984], 15);
-    
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
+<script style="height: 100%; width:fit-content">        
+
+  var map = L.map('map').setView([47.4916945, 11.0954984], 15);
         
+        L.tileLayer('https://tileserver.memomaps.de/tilegen/{z}/{x}/{y}.png', {
+		attribution: 'Konzeption <a href="http://simplealps.com/">SimpleAlps</a>, Kartengrundlage: <a href="https://memomaps.de/">memomaps</a> <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
+        
+        
+
         L.marker([47.4916945, 11.0954984]).addTo(map)
             .bindPopup('Klicke auf die Karte und befolge die drei Schritte an der Seite.')
             .openPopup();
             
-        
+       
             var c = new L.Control.Coordinates();
             c.addTo(map);
         
@@ -65,17 +125,7 @@
         
             map.on('click', onMapClick);
         
-            var editableLayers = new L.FeatureGroup();
-            map.addLayer(editableLayers);
-        
-            var MyCustomMarker = L.Icon.extend({
-              options: {
-                shadowUrl: null,
-                iconAnchor: new L.Point(12, 12),
-                iconSize: new L.Point(24, 24),
-                iconUrl: 'images/image.png'
-              }
-            });
+            
         
       </script>
 
@@ -92,7 +142,7 @@
       title: "Was möchtest du sagen?",
       fields: [{
           type: "textarea",
-          label: "Deine Koordinaten einfügen:",
+          label: "Deine Koordinaten einfügen (Strg+V oder Tippen+Einfügen) ",
           name: "koordinaten",
           required: true,
           placeholder: "deine koordinaten"
@@ -118,6 +168,37 @@
     });
   </script>
 
+<body>
+  <main>
+      <header>
+          <div>
+              <h2><i class="fa-solid fa-person-biking"></i> Bike Trail Tirol Beispiel</h2>
+          </div>
+          <nav>
+              <i class="fab fa-github"></i> <a href="https://github.com/webmapping/biketirol">Github</a>
+          </nav>
+      </header>
+      <article>
+          <h1><a href=""></a>Gefahrenkarte</h1>
+          <p>.</p>
+
+          <div id="map">
+              
+          </div>
+          
+
+          <h3>beschreibung</h3>
+          <p>.</p>
+      </article>
+      <footer>
+          <strong>Datenquellen:</strong>
+          <nav>
+              <a
+                  href="https://www.tirol.at/reisefuehrer/sport/radfahren/biketouren/a-bike-trail-tirol-westendorf-alpbach">
+                  </a>
+          </nav>
+      </footer>
+  </main>
 </body>
 
 </html>
