@@ -1,128 +1,132 @@
-/* Bike Trail Tirol Beispiel */
+// Wettervorhersage Beispiel
 
-let innsbruck = {
-    lat: 47.267222,
-    lng: 11.392778,
-    zoom: 9
-};
+// Hintergrundlayer Satellitenbild
+let startLayer = L.tileLayer.provider("Esri.WorldImagery")
 
-// WMTS Hintergrundlayer der eGrundkarte Tirol definieren
-const eGrundkarteTirol = {
-    sommer: L.tileLayer(
-        "http://wmts.kartetirol.at/gdi_summer/{z}/{x}/{y}.png", {
-            attribution: `Datenquelle: <a href="https://www.data.gv.at/katalog/dataset/land-tirol_elektronischekartetirol">eGrundkarte Tirol</a>`
-        }
-    ),
-    winter: L.tileLayer(
-        "http://wmts.kartetirol.at/gdi_winter/{z}/{x}/{y}.png", {
-            attribution: `Datenquelle: <a href="https://www.data.gv.at/katalog/dataset/land-tirol_elektronischekartetirol">eGrundkarte Tirol</a>`
-        }
-    ),
-    ortho: L.tileLayer(
-        "http://wmts.kartetirol.at/gdi_ortho/{z}/{x}/{y}.png", {
-            attribution: `Datenquelle: <a href="https://www.data.gv.at/katalog/dataset/land-tirol_elektronischekartetirol">eGrundkarte Tirol</a>`
-        }
-    ),
-    nomenklatur: L.tileLayer(
-        "http://wmts.kartetirol.at/gdi_nomenklatur/{z}/{x}/{y}.png", {
-            attribution: `Datenquelle: <a href="https://www.data.gv.at/katalog/dataset/land-tirol_elektronischekartetirol">eGrundkarte Tirol</a>`,
-            pane: "overlayPane",
-        }
-    )
-}
-
-// eGrundkarte Tirol Sommer als Startlayer
-let startLayer = eGrundkarteTirol.sommer;
-
-// Overlays Objekt für den GPX Track Layer
-let overlays = {
-    gpx: L.featureGroup()
-};
-
-// Karte initialisieren
-let map = L.map("map", {
-    center: [innsbruck.lat, innsbruck.lng],
-    zoom: innsbruck.zoom,
+// Blick auf Innsbruck
+const map = L.map("map", {
+    center: [47.267222, 11.392778],
+    zoom: 5,
     layers: [
         startLayer
-    ],
+    ]
 });
 
+// Overlays für Wind- und Wettervorhersage
+const overlays = {
+    "wind": L.featureGroup().addTo(map),
+    "weather": L.featureGroup().addTo(map),
+};
 
-// Layer control mit WMTS Hintergründen und Overlay
-let layerControl = L.control.layers({
-    "eGrundkarte Tirol Sommer": startLayer,
-    "eGrundkarte Tirol Winter": eGrundkarteTirol.winter,
-    "eGrundkarte Tirol Orthofoto": eGrundkarteTirol.ortho,
-    "eGrundkarte Tirol Orthofoto mit Beschriftung": L.layerGroup([
-        eGrundkarteTirol.ortho,
-        eGrundkarteTirol.nomenklatur,
-    ])
-}, {
-    "GPX Track der Etappe": overlays.gpx,
+// Layer control mit Satellitenbild
+const layerControl = L.control.layers({
+    "Satellitenbild": startLayer
 }).addTo(map);
 
-// Maßstab control
+// Maßstab
 L.control.scale({
     imperial: false
 }).addTo(map);
 
-// Fullscreen control
-L.control.fullscreen().addTo(map);
-
-// GPX Track Layer beim Laden anzeigen
-overlays.gpx.addTo(map);
-
-
-
-// GPX Track Layer implementieren
-let gpxTrack = new L.GPX("./data/gps-daten-etappe-14-westendorf-alpbach.gpx", {
-async: true,
-marker_options:{
-    startIconUrl:'icons/start.png',
-    endIconUrl:'icons/finish.png',
-    shadowUrl: null,
-    iconSize: [32, 37],
-    iconAnchor: [16, 37],
-},
-polyline_options:{
-    color:"black",
-    dashArray:[5,4],
+// Datum formatieren
+let formatDate = function(date) {
+    return date.toLocaleDateString("de-AT", {
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    }) + " Uhr";
 }
 
-}).addTo(overlays.gpx);
+// Windvorhersage:
+async function loadWind(url) {
+    const response = await fetch(url);
+    const jsondata = await response.json();
 
-gpxTrack.on("loaded", function (evt){
-    //console.log ("loaded gpx event: ", evt);
-    map.fitBounds(evt.target.getBounds())
+    let forecastDate = new Date(jsondata[0].header.refTime);
+    //console.log("Echtes Datum Erstellung", forecastDate);
+    forecastDate.setHours(forecastDate.getHours() + jsondata[0].header.forecastTime);
+    //console.log("Echtes Datum Vorhersage", forecastDate);
+
+    let forecastLabel = formatDate(forecastDate);
+    //console.log("Vorhersagezeitpunkt", forecastLabel);
+
+    layerControl.addOverlay(overlays.wind, `ECMWF Windvorhersage für ${forecastLabel}`)
+
+    L.velocityLayer({
+        data: jsondata,
+        lineWidth: 2,
+        displayOptions: {
+            velocityType: "",
+            directionString: "Windrichtung",
+            speedString: "Windgeschwindigkeit",
+            speedUnit: "k/h",
+            emptyString: "keine Daten vorhanden",
+            position: "bottomright"
+        }
+    }).addTo(overlays.wind);
+};
+loadWind("https://geographie.uibk.ac.at/webmapping/ecmwf/data/wind-10u-10v-europe.json");
+
+//Wettervorhersage:
+layerControl.addOverlay(overlays.weather, "Wettervorhersage met.no");
+
+let marker = L.circleMarker([
+    47.267222, 11.392778
+]).bindPopup("Wettervorhersage").addTo(overlays.weather);
+
+async function loadWeather(url) {
+    const response = await fetch(url);
+    const jsondata = await response.json();
+
+ //Marker positionieren
+    marker.setLatLng([
+        jsondata.geometry.coordinates[1],
+        jsondata.geometry.coordinates[0]
+    ]);
+
+    let details = jsondata.properties.timeseries[0].data.instant.details;
+    //console.log("Aktuelle Wetterdaten", details);
+
+    let forecastDate = new Date(jsondata.properties.timeseries[0].time);
+    //console.log(forecastDate);
+    let forecastLabel = formatDate(forecastDate);
+
+    let popup = `
+        <strong>Wettervorhersage für ${forecastLabel}</strong>
+        <ul>
+            <li>Luftdruck: ${details.air_pressure_at_sea_level} (hPa)</li>
+            <li>Luftemperatur: ${details.air_temperature} (°C)</li>
+            <li>Bewölkung: ${details.cloud_area_fraction} (%)</li>
+            <li>Niederschlag: ${details.precipitation_amount} (mm)</li>
+            <li>Relative Luftfeuchtigkeit: ${details.relative_humidity} (%)</li>
+            <li>Windrichtung: ${details.wind_from_direction} (°)</li>
+            <li>Windgeschwindigkeit: ${(details.wind_speed * 3.6). toFixed (1)}  (km/h)</li>
+        </ul>
+    `;
 
 
-let gpxLayer = evt.target;
-map.fitBounds(gpxLayer.getBounds());
+//Weathericon
+for (let i=0; i <=24; i+= 3) {
+    let symbol = jsondata.properties.timeseries[i].data.next_1_hours.summary.symbol_code;
+      
+    let forecastDate = new Date(jsondata.properties.timeseries[i].time);
+    let forecastLabel = formatDate(forecastDate);
 
-let popup = `
-<h3> ${gpxLayer.get_name()}</h3>
-<ul>
-    <li>Streckenlänge ${gpxLayer.get_distance()/1000} m </li>
-    <li>Höchster Punkt: ${gpxLayer.get_elevation_max()} m</li>
-    <li>Niedrigster Punkt: ${gpxLayer.get_elevation_min()} m</li>
-    <li>Höhenmeter Bergauf: ${gpxLayer.get_elevation_gain().toFixed()} m</li>
-    <li>Höhenmeter Bergab: ${gpxLayer.get_elevation_loss().toFixed()} m</li>
+    popup += `<img src="icons/${symbol}.svg" title="${forecastLabel}" alt= ${symbol}" style="width: 32px">`;
+};
 
-</ul>
-`;
-gpxLayer.bindPopup(popup);
-});
 
-let elevationControl = L.control.elevation({
-    time:false,
-    theme:'bike-tirol',
-    elevationDIV: "#profile",
-    height: 200
+    marker.setPopupContent(popup).openPopup();
+};
+loadWeather("https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=47.267222&lon=11.392778");
 
-}).addTo(map);
+// auf Klick auf die Karte reagieren
+map.on("click", function(evt) {
+    //console.log(evt);
 
-gpxTrack.on("addline", function(evt) {
+    let url = `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${evt.latlng.lat}&lon=${evt.latlng.lng}`;
+    //console.log(url);
 
-    elevationControl.addData(evt.line);
+    loadWeather(url);
 });
