@@ -4,7 +4,7 @@
 
 body {
     font-family: 'Montserrat', sans-serif;
-    background: url("data/images/hintereisferner.jpg") no-repeat center fixed;
+    background: url("hintereisferner.jpg") no-repeat center fixed;
     background-size: cover;
 }
 
